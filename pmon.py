@@ -48,18 +48,27 @@ def b_to_mb(b):
     return round(b / (1024 * 1024))
 
 
+if args.verbose:
+    print("Preparing data stores...")
 cpu, threads, mem_pct, mem_vms, mem_rss = [], [], [], [], []
+elapsed = 0
+
+if args.verbose:
+    print("Harvesting process details...")
 cmdline = " ".join(p.cmdline())
 ppid = p.ppid()
 cores = p.cpu_affinity()
 create_time = datetime.datetime.fromtimestamp(p.create_time()).strftime("%d-%m-%Y %H:%M:%S")
 niceness = p.nice()
 
+if args.verbose:
+    print("Scrapping unstable values...")
 for i in range(3):
     p.cpu_percent()  # First values should be discarded
     time.sleep(0.1)
 
-elapsed = 0
+if args.verbose:
+    print()
 print("Press CTRL+C to stop monitoring.")
 while True:
     try:
@@ -84,11 +93,15 @@ while True:
         break
 
 # Graphspace configuration
+if args.verbose:
+    print("\nPreparing graphspace...")
 rows = 3
 cols = 2
 fig = plt.figure(1)
 
 # CPU Percentage plot
+if args.verbose:
+    print("Plotting CPU Percentage...")
 plt.subplot(rows, cols, 1)
 plt.ticklabel_format(useOffset=False)
 plt.title("CPU")
@@ -100,6 +113,8 @@ plt.ylim(min_or_zero(cpu), max(cpu) + 1)
 plt.grid(True)
 
 # Threads Number plot
+if args.verbose:
+    print("Plotting Threads Number...")
 plt.subplot(rows, cols, 3)
 plt.ticklabel_format(useOffset=False)
 plt.title("Threads")
@@ -111,6 +126,8 @@ plt.ylim(min(threads) - 1, max(threads) + 1)
 plt.grid(True)
 
 # Memory Percentage plot
+if args.verbose:
+    print("Plotting Memory Percentage...")
 plt.subplot(rows, cols, 2)
 plt.ticklabel_format(useOffset=False)
 plt.title("Memory (%)")
@@ -122,6 +139,8 @@ plt.ylim(min_or_zero(mem_pct), max(mem_pct) + 1)
 plt.grid(True)
 
 # Virtual Memory plot
+if args.verbose:
+    print("Plotting Virtual Memory...")
 plt.subplot(rows, cols, 4)
 plt.ticklabel_format(useOffset=False)
 plt.title("Memory (VMS)")
@@ -133,6 +152,8 @@ plt.ylim(min(mem_vms) - 1, max(mem_vms) + 1)
 plt.grid(True)
 
 # Resident Memory plot
+if args.verbose:
+    print("Plotting Resident Memory...")
 plt.subplot(rows, cols, 6)
 plt.ticklabel_format(useOffset=False)
 plt.title("Memory (RSS)")
@@ -144,12 +165,18 @@ plt.ylim(min(mem_rss) - 1, max(mem_rss) + 1)
 plt.grid(True)
 
 # Graphspace cleanup
+if args.verbose:
+    print("Cleaning up graphspace...")
 fig.tight_layout()
 plt.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.2)
 
 # Additional text
+if args.verbose:
+    print("Overlaying process details...")
 fig.text(0.005, 0.09, "Command: \"" + cmdline + "\"")
 fig.text(0.005, 0.05, "Cores: " + str(cores) + " - Niceness: " + str(niceness) + " - Parent PID: " + str(ppid))
 fig.text(0.005, 0.01, "Started at: " + create_time + " - Monitored for: " + str(elapsed) + "s")
 
+if args.verbose:
+    print("Showing the graph...")
 plt.show()
